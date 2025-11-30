@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>면접 질문 생성기</title>
+    <style>
+      body {
+        font-family: Inter, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+        margin: 24px;
+        background: #f7fafc;
+      }
+      .card {
+        max-width: 760px;
+        margin: 24px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 20px;
+      }
+      label {
+        display: block;
+        margin: 12px 0 6px;
+        font-weight: 600;
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #e6edf3;
+      }
+      button {
+        margin-top: 12px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 0;
+        background: #2563eb;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      pre {
+        background: #0f172a;
+        color: #e6eef8;
+        padding: 12px;
+        border-radius: 8px;
+        overflow: auto;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      .muted {
+        color: #6b7280;
+        font-size: 13px;
+      }
+      .error {
+        color: #b91c1c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>면접 질문 생성기</h1>
+      <p class="muted">
+        지원하는 직무를 입력하면 백엔드(Flask) API에 요청하여 면접 질문 5개를
+        받아옵니다.
+      </p>
+
+      <label for="job">지원 직무</label>
+      <input id="job" type="text" placeholder="예: 데이터 분석가" />
+
+      <button id="generate">생성</button>
+      <p id="status" class="muted"></p>
+
+      <div id="result" style="margin-top: 16px"></div>
+    </div>
+
+    <script>
+      const generateBtn = document.getElementById("generate");
+      const jobInput = document.getElementById("job");
+      const statusEl = document.getElementById("status");
+      const resultEl = document.getElementById("result");
+
+      // 기본 엔드포인트: Flask 개발 서버가 동일 호스트에서 5000 포트로 동작한다고 가정
+      const API_BASE = "http://localhost:5000";
+      const ENDPOINT = API_BASE + "/generate_questions";
+
+      function renderQuestions(data) {
+        resultEl.innerHTML = "";
+
+        if (data.error) {
+          resultEl.innerHTML = `<p class="error">오류: ${escapeHtml(
+            data.error
+          )}</p>`;
+          return;
+        }
+
+        if (data.warning && data.raw) {
+          resultEl.innerHTML = `<p class="muted">경고: 모델 응답을 파싱하지 못했습니다. raw 필드를 확인하세요.</p><pre>${escapeHtml(
+            data.raw
+          )}</pre>`;
+          return;
+        }
+
+        const q = data.questions || [];
+        if (!Array.isArray(q) || q.length === 0) {
+          resultEl.innerHTML =
+            '<p class="muted">질문이 없습니다. 응답을 확인하세요.</p>';
+          return;
+        }
+
+        const container = document.createElement("div");
+
+        q.forEach((item, idx) => {
+          const qText = item.question || item;
+          const block = document.createElement("div");
+          block.style.marginBottom = "22px";
+
+          block.innerHTML = `
+            <div style="font-weight:600; margin-bottom:6px;">
+              Q${idx + 1}. ${escapeHtml(qText)}
+            </div>
+
+            <textarea 
+              id="answer_${idx}"
+              style="width:100%; height:90px; padding:8px; border-radius:8px; border:1px solid #ccc;"
+              placeholder="여기에 답변을 입력하세요..."
+            ></textarea>
+
+            <div style="margin-top:8px;">
+              <button id="analyze_btn_${idx}" style="padding:8px 12px;border-radius:6px;background:#2563eb;color:#fff;border:0;cursor:pointer;">
+                분석하기
+              </button>
+            </div>
+
+            <div id="analysis_area_${idx}" style="margin-top:12px; display:flex; gap:12px; align-items:flex-start;">
+              <div style="flex:1; min-width:220px;">
+                <canvas id="radar_${idx}" width="300" height="300"></canvas>
+              </div>
+              <div style="flex:1;">
+                <div id="text_result_${idx}"></div>
+              </div>
+            </div>
+          `;
+
+          container.appendChild(block);
+
+          // 분석 버튼 이벤트 등록
+          setTimeout(() => {
+            document
+              .getElementById(`analyze_btn_${idx}`)
+              .addEventListener("click", () => {
+                analyzeAnswer(qText, `answer_${idx}`, idx);
+              });
+          }, 0);
+        });
+
+        resultEl.appendChild(container);
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      async function generate() {
+        const job = jobInput.value.trim();
+        statusEl.textContent = "";
+        resultEl.innerHTML = "";
+
+        if (!job) {
+          statusEl.textContent = "직무를 입력하세요.";
+          return;
+        }
+
+        generateBtn.disabled = true;
+        generateBtn.textContent = "생성 중...";
+        statusEl.textContent = "요청 보내는 중...";
+
+        try {
+          const resp = await fetch(ENDPOINT, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ job_position: job }),
+          });
+
+          const data = await resp.json();
+
+          if (!resp.ok) {
+            renderQuestions({ error: data.error || `HTTP ${resp.status}` });
+          } else {
+            renderQuestions(data);
+          }
+
+          statusEl.textContent = "완료";
+        } catch (err) {
+          console.error(err);
+          renderQuestions({
+            error:
+              "서버에 연결할 수 없습니다. Flask 서버가 실행 중인지, CORS 설정을 확인하세요.",
+          });
+          statusEl.textContent = "";
+        } finally {
+          generateBtn.disabled = false;
+          generateBtn.textContent = "생성";
+        }
+      }
+
+      async function analyzeAnswer(question, answerInputId, idx) {
+        const answer = document.getElementById(answerInputId).value.trim();
+        const textResult = document.getElementById(`text_result_${idx}`);
+        const canvasId = `radar_${idx}`;
+        const canvasEl = document.getElementById(canvasId);
+
+        textResult.innerHTML = "";
+        if (!answer) {
+          textResult.innerHTML =
+            '<p style="color:#b91c1c">답변을 입력해주세요.</p>';
+          return;
+        }
+
+        // UI
+        const btn = document.getElementById(`analyze_btn_${idx}`);
+        const prevText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "분석 중...";
+
+        try {
+          const resp = await fetch("http://localhost:5000/analyze_answer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question: question, answer: answer }),
+          });
+
+          const data = await resp.json();
+
+          if (data.error) {
+            textResult.innerHTML = `<p style="color:#b91c1c">${escapeHtml(
+              data.error
+            )}</p>`;
+            return;
+          }
+
+          if (data.warning && data.raw) {
+            textResult.innerHTML = `<p class="muted">모델 응답 파싱 실패 — raw 확인</p><pre>${escapeHtml(
+              data.raw
+            )}</pre>`;
+            return;
+          }
+
+          // 점수 배열 만들기 (labels는 한글)
+          const labels = [
+            "직무적합성",
+            "논리구조",
+            "직업적 태도",
+            "구체성",
+            "핵심 키워드",
+          ];
+          const scoresObj = data.scores || {};
+          const values = [
+            Number(scoresObj.job_fit || 0),
+            Number(scoresObj.logic || 0),
+            Number(scoresObj.attitude || 0),
+            Number(scoresObj.specificity || 0),
+            Number(scoresObj.keywords || 0),
+          ];
+
+          // 텍스트 결과(장단점)
+          const strengths = (data.strengths || [])
+            .map((s) => `<li>${escapeHtml(s)}</li>`)
+            .join("");
+          const weaknesses = (data.weaknesses || [])
+            .map((w) => `<li>${escapeHtml(w)}</li>`)
+            .join("");
+
+          textResult.innerHTML = `
+            <div>
+              <strong>장점</strong>
+              <ul>${strengths || "<li>없음</li>"}</ul>
+
+              <strong>단점</strong>
+              <ul>${weaknesses || "<li>없음</li>"}</ul>
+            </div>
+          `;
+
+          // Radar 차트 그리기 (기존 차트가 있으면 destroy)
+          if (radarCharts[canvasId]) {
+            try {
+              radarCharts[canvasId].destroy();
+            } catch (e) {}
+          }
+
+          // Chart.js로 방사형 차트 생성
+          const ctx = canvasEl.getContext("2d");
+          radarCharts[canvasId] = new Chart(ctx, {
+            type: "radar",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "평가 점수 (0~100)",
+                  data: values,
+                  fill: true,
+                  // 차트 색상은 브라우저 기본에 맡깁니다 (사용자 요청 없음)
+                  backgroundColor: "rgba(54, 162, 235, 0.2)",
+                  borderColor: "rgba(54, 162, 235, 1)",
+                  pointBackgroundColor: "rgba(54, 162, 235, 1)",
+                },
+              ],
+            },
+            options: {
+              scales: {
+                r: {
+                  suggestedMin: 0,
+                  suggestedMax: 100,
+                  ticks: { stepSize: 20 },
+                },
+              },
+              plugins: {
+                legend: { display: false },
+              },
+              elements: { line: { borderWidth: 2 } },
+            },
+          });
+        } catch (err) {
+          console.error(err);
+          textResult.innerHTML =
+            '<p style="color:#b91c1c">서버 오류가 발생했습니다.</p>';
+        } finally {
+          btn.disabled = false;
+          btn.textContent = prevText;
+        }
+      }
+
+      generateBtn.addEventListener("click", generate);
+
+      // 엔터로도 전송
+      jobInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") generate();
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </body>
+</html>
