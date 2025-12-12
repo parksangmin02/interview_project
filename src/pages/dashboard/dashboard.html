@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 면접 대시보드</title>
+    
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <a href="dashboard.html" class="logo-link">
+            <div class="logo">AI 면접</div>
+        </a>
+        <a href="profile.html" class="profile-link">
+            <div class="profile-icon">👤</div>
+        </a>
+    </header>
+
+    <main>
+        <div class="hub-container">
+
+            <div class="welcome-header">
+                <h1><span id="username-display">사용자</span>님, 환영합니다!</h1>
+                <p>오늘도 면접 준비를 시작해볼까요?</p>
+            </div>
+
+            <div class="portal-actions">
+                <a href="select_job.html" class="portal-card">
+                    <span class="card-icon">💬</span>
+                    <h2>모의 면접</h2>
+                    <p>AI와 함께 실전 면접을 연습하세요</p>
+                    <span class="card-arrow">→</span>
+                </a>
+                
+                <a href="history.html" class="portal-card">
+                    <span class="card-icon">📚</span>
+                    <h2>면접 기록 (학습)</h2>
+                    <p>지난 면접을 복기하고 피드백을 받으세요</p>
+                    <span class="card-arrow">→</span>
+                </a>
+            </div>
+
+            <!-- (3) 대시보드 모듈 (최근 면접 기록) -->
+            <div class="module-card">
+                <h2>최근 면접 기록</h2>
+
+                <!-- 
+                  (참고) 
+                  여기는 나중에 데이터베이스에서 실제 기록을
+                  불러와서 채워야 합니다.
+                -->
+                <div class="activity-list">
+                    
+                    <!-- 예시 항목 1 -->
+                    <div class="activity-item">
+                        <div class="item-details">
+                            <span class="item-title">백엔드 개발자 (신입)</span>
+                            <span class="item-date">2025년 11월 6일 완료</span>
+                        </div>
+                        <a href="result.html?id=1" class="btn-secondary">결과 보기</a>
+                    </div>
+                    
+                    <!-- 예시 항목 2 -->
+                    <div class="activity-item">
+                        <div class="item-details">
+                            <span class="item-title">프론트엔드 개발자 (주니어)</span>
+                            <span class="item-date">2025년 11월 5일 완료</span>
+                        </div>
+                        <a href="result.html?id=2" class="btn-secondary">결과 보기</a>
+                    </div>
+
+                    <!-- 
+                       (참고) 
+                       기록이 없을 때 (신규 사용자)
+                       .empty-state를 보여주고, .activity-item은 숨깁니다. 
+                    -->
+                    <!-- 
+                    <div class="empty-state">
+                        <p>아직 진행한 면접이 없습니다.</p>
+                        <span>첫 모의 면접을 시작하고 피드백을 받아보세요!</span>
+                    </div> 
+                    -->
+                </div>
+
+                <!-- 모든 기록 보기 (나중에 만들 페이지) -->
+                <div class="view-all-link">
+                    <a href="history.html">모든 면접 기록 보기 →</a>
+                </div>
+            </div>
+
+            <!-- (4) ★제안★ 내 프로필 요약 모듈 -->
+            <div class="module-card">
+                <h2>내 프로필 요약</h2>
+                <div class="profile-summary">
+                    <div class="profile-info">
+                        <span class="profile-name">사용자</span>
+                        <span class="profile-email">user@example.com</span>
+                    </div>
+                    <!-- (참고) 'profile.html'은 'select_job.html'처럼 폼 페이지가 될 것입니다. -->
+                    <a href="profile.html" class="btn-secondary">프로필 수정</a>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+</body>
+</html>

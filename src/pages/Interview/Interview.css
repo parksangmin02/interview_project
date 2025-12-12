@@ -1,0 +1,247 @@
+.interview-container {
+    width: 95%;
+    max-width: 1080px;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.interview-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 10px;
+}
+
+.interview-info-header .info-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.interview-info-header .job-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+}
+
+.interview-info-header .status-badge {
+    font-size: 14px;
+    font-weight: 700;
+    color: #007bff;
+    background-color: #e6f2ff;
+    padding: 5px 12px;
+    border-radius: 15px;
+}
+
+.interview-info-header .info-right {
+    font-size: 18px;
+    font-weight: 500;
+    color: #555;
+}
+
+.progress-bar-container {
+    width: 100%;
+}
+
+.progress-bar {
+    display: flex;
+    gap: 8px;
+    height: 10px;
+    background-color: transparent;
+    padding: 4px;
+}
+
+.progress-segment {
+    flex-grow: 1;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    border: none; 
+}
+
+.progress-segment.answered {
+    background-color: #007bff;
+}
+
+.progress-segment.current {
+    background-color: #fff;
+    box-shadow: inset 0 0 0 2px #007bff; 
+    transform: scale(1.05);
+}
+
+.progress-segment.current.answered {
+    background-color: #007bff;
+    box-shadow: 0 0 0 3px #b8daff; 
+    transform: scale(1.05);
+}
+
+.progress-segment:hover {
+    background-color: #d0d0d0;
+}
+
+.progress-segment.answered:hover {
+    background-color: #0069d9;
+}
+
+.interview-card {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    
+    width: 100%;
+    box-sizing: border-box;
+    height: auto;
+}
+
+.question-header .question-number {
+    font-size: 16px;
+    font-weight: 700;
+    color: #007bff;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.question-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 10px 0;
+    line-height: 1.4;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.question-header .tip-message {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.answer-section {
+    position: relative;
+}
+
+.answer-textarea {
+    width: 100%;
+    min-height: 400px;
+    padding: 20px;
+    border: 1px solid #E0E0E0;
+    border-radius: 10px;
+    resize: none;
+    font-size: 16px;
+    color: #333;
+    box-sizing: border-box;
+}
+
+.answer-textarea:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.char-count {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    font-size: 14px;
+    color: #999;
+    background-color: #fff;
+    padding: 0 5px;
+}
+
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.nav-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border: 1px solid #ddd;
+}
+
+.prev-button {
+    background-color: #f8f9fa;
+    color: #495057;
+}
+.prev-button:hover:not(:disabled) {
+    background-color: #e9ecef;
+}
+.prev-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+}
+
+.next-button {
+    background-color: #007bff;
+    color: #ffffff;
+    border-color: #007bff;
+}
+.next-button:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #e9ecef;
+    border-top: 5px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+.loading-overlay h2 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.loading-overlay p {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
